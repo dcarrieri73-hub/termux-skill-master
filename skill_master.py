@@ -1,0 +1,254 @@
+#!/usr/bin/env python3
+# TERMUX SKILL MASTER v4.6 - Auto-Write & Didactic Edition (English)
+import os, subprocess, logging, traceback, json
+from datetime import datetime
+
+BASE_DIR = os.path.expanduser("~/Termux_Skill_Project")
+os.makedirs(BASE_DIR, exist_ok=True)
+logging.basicConfig(filename=os.path.join(BASE_DIR,"error.log"),
+    level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
+
+LANGS = {
+    "1":("Full English","English","English","English"),
+    "2":("Full Italian","Italian","Italian","Italian"),
+    "3":("Full German","German","German","German"),
+    "4":("Italian > English","Italian","English","English"),
+    "5":("Italian > German","Italian","Italian","German"),
+    "6":("English > German","English","English","German"),
+    "7":("Custom",None,None,None),
+}
+
+TOOL_TYPES = {
+    "1":"Simple Input/Output",
+    "2":"Persistent JSON Memory",
+    "3":"LLM Weights and Training",
+    "4":"External HTTP/REST API",
+    "5":"Infinity Polling loop",
+    "6":"Interactive CLI with menu",
+    "7":"Multi-file with modules",
+    "8":"Custom",
+    "9":"[ANALYSIS/DIDACTIC] Theoretical study only - no code",
+}
+
+def clr(): os.system("clear")
+def div(c="=",n=46): print(c*n)
+
+def safe_int(msg, lo, hi):
+    while True:
+        r = input(msg).strip()
+        if r.isdigit() and lo <= int(r) <= hi: return int(r)
+        print("  Number between "+str(lo)+" and "+str(hi))
+
+def relog(path):
+    lp = os.path.join(path,"error.log")
+    rl = logging.getLogger()
+    for h in rl.handlers[:]: rl.removeHandler(h)
+    rl.addHandler(logging.FileHandler(lp))
+
+def clip(text):
+    try:
+        subprocess.run(["termux-clipboard-set"],input=text.encode("utf-8"),check=True)
+        return True
+    except FileNotFoundError:
+        logging.error("termux-clipboard-set not found")
+        return False
+    except Exception as e:
+        logging.error("Clipboard: "+str(e))
+        return False
+
+def get_ver(path):
+    vf = os.path.join(path,"version.txt")
+    try:
+        if os.path.exists(vf):
+            p = open(vf).read().strip().split(".")
+            if len(p)==2 and all(x.isdigit() for x in p):
+                p[-1]=str(int(p[-1])+1); return ".".join(p)
+    except Exception as e: logging.error("ver:"+str(e))
+    return "1.0"
+
+def save_ver(path,v):
+    try: open(os.path.join(path,"version.txt"),"w").write(v)
+    except Exception as e: logging.error("save_ver:"+str(e))
+
+def save_history(path,prompt,ver):
+    hf = os.path.join(path,"prompt_history.json")
+    h = []
+    if os.path.exists(hf):
+        try: h = json.load(open(hf))
+        except: h = []
+    h.append({"ts":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),"ver":ver,"prompt":prompt})
+    try: json.dump(h,open(hf,"w"),indent=2,ensure_ascii=False)
+    except Exception as e: logging.error("history:"+str(e))
+
+def multiline(label):
+    print("  "+label+" (Press ENTER twice to finish):")
+    lines = []
+    while True:
+        l = input("  > ")
+        if not l: break
+        lines.append(l)
+    return "\n".join(lines) if lines else "Not specified."
+
+def write_skill_file(path, nome_tool, content):
+    filename = f"{nome_tool}.py"
+    full_path = os.path.join(path, filename)
+    try:
+        with open(full_path, "w") as f:
+            f.write(content)
+        os.chmod(full_path, 0o755)
+        return True
+    except Exception as e:
+        logging.error("File writing: "+str(e))
+        return False
+
+def step_workspace():
+    clr(); div()
+    print("  TERMUX SKILL MASTER v4.6"); div()
+    print("\n  [1] New project\n  [2] Open existing\n  [3] Root (no subfolders)")
+    s = safe_int("Choose (1-3): ",1,3)
+    path=BASE_DIR; nome="ROOT"; ver="1.0"
+    rel="~/Termux_Skill_Project"; cd="cd "+rel
+    if s==1:
+        nome = input("  Folder name: ").strip() or "proj_"+datetime.now().strftime("%Y%m%d_%H%M")
+        path = os.path.join(BASE_DIR,nome)
+        os.makedirs(path,exist_ok=True); save_ver(path,"1.0")
+        rel="~/Termux_Skill_Project/"+nome
+        cd="mkdir -p "+rel+" && cd "+rel
+    elif s==2:
+        pl = [d for d in os.listdir(BASE_DIR) if os.path.isdir(os.path.join(BASE_DIR,d))]
+        if not pl: print("  No projects found.")
+        else:
+            for i,p in enumerate(pl,1): print("    ["+str(i)+"] "+p)
+            idx = safe_int("  Select: ",1,len(pl))-1
+            nome=pl[idx]; path=os.path.join(BASE_DIR,nome)
+            ver=get_ver(path)
+            rel="~/Termux_Skill_Project/"+nome; cd="cd "+rel
+    relog(path)
+    return nome,path,rel,ver,cd
+
+def step_cognitive():
+    div("-"); print("  STEP 2 - COGNITIVE MODEL\n")
+    modo=["EI Analysis","Coder","Hybrid"][safe_int("  Mode (1-3): ",1,3)-1]
+    aut="Autonomous Agent" if safe_int("  Autonomy (1-2): ",1,2)==2 else "Strategic Assistant"
+    rig="Executive" if safe_int("  Rigidity (1-2): ",1,2)==1 else "Consultative"
+    return modo,aut,rig
+
+def step_stack():
+    div("-"); print("  STEP 3 - TECH STACK\n")
+    ui={1:"CLI",2:"Chat Bot",3:"WebApp",4:"Data Only"}[safe_int("  UI (1-4): ",1,4)]
+    exp="JSON+CSV" if safe_int("  Data (1-2): ",1,2)==2 else "JSON"
+    log_on = input("  Enable error.log? (y/n): ").strip().lower()=="y"
+    poll   = input("  Infinity Polling? (y/n): ").strip().lower()=="y"
+    sec    = input("  Separate API keys? (y/n): ").strip().lower()=="y"
+    return ui,exp,log_on,poll,sec
+
+def step_language():
+    div("-"); print("  STEP 4 - LANGUAGE\n")
+    for k,v in LANGS.items(): print("    ["+k+"] "+v[0])
+    s=safe_int("  Choose (1-7): ",1,7); preset=LANGS[str(s)]
+    if s==7:
+        lp,lr,lc = input("Prompt: "), input("Resp: "), input("Code: ")
+    else: lp,lr,lc=preset[1],preset[2],preset[3]
+    return lp,lr,lc
+
+def step_ei():
+    div("-"); print("  STEP 5 - EI ANALYSIS\n")
+    obj, vers, tool = input("  Objective: "), input("  Version: "), input("  Tool: ")
+    deps = input("  Dependencies: ")
+    tech = multiline("Technical description / request")
+    return obj,vers,tool,deps,tech
+
+def step_desc():
+    div("-"); print("  STEP 6 - STRATEGIC DESCRIPTION\n")
+    return multiline("Project goal")
+
+def step_tools():
+    div("-"); print("  STEP 7 - TOOLS DEFINITION\n")
+    for k,v in TOOL_TYPES.items(): print("    ["+k+"] "+v)
+    raw = input("\n  Choose (e.g., 1,4 | 9 for Analysis only): ").strip()
+
+    tipi_sel = []; is_didactic = False
+    for x in raw.split(","):
+        x = x.strip()
+        if x == "9":
+            is_didactic = True
+            tipi_sel = ["ANALYSIS/DIDACTIC - Theoretical study without code"]; break
+        elif x == "8":
+            tipi_sel.append(input("  Describe custom: ").strip() or "Custom")
+        elif x in TOOL_TYPES: tipi_sel.append(TOOL_TYPES[x])
+    if not tipi_sel: tipi_sel = ["Simple Input/Output"]
+
+    if is_didactic:
+        nome_tool = input("  Analysis title: ").strip() or "Theoretical_Analysis"
+        n_tools, extra = "1", ""
+        funzione = multiline("What do you want to study?")
+    else:
+        nome_tool = input("  Tool file name: ").strip() or "main"
+        n_tools = input("  How many tools?: ") or "1"
+        funzione = multiline("What does the tool do?")
+        extra = ""
+        if any("Weights" in t for t in tipi_sel): extra += "  Weights: "+(input("  Weights structure: ") or "JSON")+"\n"
+        if any("API" in t for t in tipi_sel): extra += "  API: "+(input("  API Endpoint: ") or "N/A")+"\n"
+
+    return tipi_sel, nome_tool, funzione, n_tools, extra, is_didactic
+
+def build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
+                 lp,lr,lc,obj,vers,tool,deps,tech,desc,
+                 tipi_tool,nome_tool,funzione_tool,n_tools,extra_tool,is_didactic):
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    S = "="*46
+    out = f"{S}\n HYBRID SKILL v{ver} - {nome}\n Path: {rel}\n {cd}\n"
+    if is_didactic: out += " Mode: ANALYSIS/DIDACTIC\n"
+    out += f"{S}\n\nOBJECTIVE: {obj}\nVERSION: {vers}\nTOOL: {tool}\n"
+    if not is_didactic and deps: out += f"DEPENDENCIES: {deps}\n"
+    
+    out += f"\nTECHNICAL:\n{tech}\n\nSTRATEGY:\n{desc}\n\n"
+    out += f"CONFIGURATION:\nMode={modo} | Autonomy={aut} | Languages={lr}\n"
+    out += f"STACK: UI={ui} | Log={log_on} | Polling={poll}\n\n"
+    
+    out += f"TOOLS ({nome_tool}):\n"
+    for t in tipi_tool: out += f" - {t}\n"
+    out += f"\nFUNCTION:\n{funzione_tool}\n\n"
+    
+    out += f"{S}\n  INSTRUCTIONS\n{S}\n"
+    if is_didactic:
+        out += "[1] MODE: ANALYSIS ONLY (Schemas, tables, no code).\n"
+    else:
+        out += "[1] BOOTSTRAP: Use pip install for dependencies.\n"
+        out += f"[2] PROTOCOL: Send COMPLETE CODE with cat-EOF to {rel}/{nome_tool}.py\n"
+    out += "[3] LOGGING: Always update error.log.\n"
+    return out
+
+def main():
+    clr()
+    nome,path,rel,ver,cd = step_workspace()
+    modo,aut,rig = step_cognitive()
+    ui,exp,log_on,poll,sec = step_stack()
+    lp,lr,lc = step_language()
+    obj,vers,tool,deps,tech = step_ei()
+    desc = step_desc()
+    tipi_t,nome_t,fun_t,n_t,ex_t,did = step_tools()
+
+    prompt = build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
+                          lp,lr,lc,obj,vers,tool,deps,tech,desc,
+                          tipi_t,nome_t,fun_t,n_t,ex_t,did)
+
+    with open(os.path.join(path,"latest_prompt.txt"),"w") as f: f.write(prompt)
+    save_history(path,prompt,ver)
+    if nome!="ROOT": save_ver(path,ver)
+
+    clr(); div(); print(prompt); div()
+
+    if clip(prompt): print("  ✅ Prompt copied to clipboard!")
+
+    if not did:
+        div("-")
+        if input(f"  Do you want to create an empty {nome_t}.py now? (y/n): ").lower() == 'y':
+            if write_skill_file(path, nome_t, f"#!/usr/bin/env python3\n# v{ver} - {nome_t}\n"):
+                print(f"  ✅ File created: {rel}/{nome_t}.py")
+
+    input("\nPress ENTER to close...")
+
+if __name__ == "__main__":
+    try: main()
+    except Exception: logging.error(traceback.format_exc())
