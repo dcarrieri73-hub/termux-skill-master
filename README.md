@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.jpg" alt="Termux Skill Master Logo" width="200"/>
+</p>
+
 # 📱 Termux Skill Master v4.6
 
 ## 📝 Description
