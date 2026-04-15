@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# TERMUX SKILL MASTER v4.6 - Auto-Write & Didactic Edition
+# TERMUX SKILL MASTER v4.6 - Auto-Write & Didactic Edition (Italiano)
 import os, subprocess, logging, traceback, json
 from datetime import datetime
 
@@ -37,7 +37,7 @@ def safe_int(msg, lo, hi):
     while True:
         r = input(msg).strip()
         if r.isdigit() and lo <= int(r) <= hi: return int(r)
-        print("  Numero tra "+str(lo)+" e "+str(hi))
+        print("  [!] Inserisci un numero tra "+str(lo)+" e "+str(hi))
 
 def relog(path):
     lp = os.path.join(path,"errori.log")
@@ -128,16 +128,25 @@ def step_workspace():
 
 def step_cognitive():
     div("-"); print("  STEP 2 - MODELLO COGNITIVO\n")
-    modo=["Analisi EI","Coder","Ibrido"][safe_int("  Modo (1-3): ",1,3)-1]
-    aut="Agente Autonomo" if safe_int("  Autonomia (1-2): ",1,2)==2 else "Assistente Strategico"
-    rig="Esecutivo" if safe_int("  Rigidita (1-2): ",1,2)==1 else "Consultivo"
+    print("  Modo: [1] Analisi EI  [2] Coder  [3] Ibrido")
+    modo=["Analisi EI","Coder","Ibrido"][safe_int("  Scegli (1-3): ",1,3)-1]
+    
+    print("\n  Autonomia: [1] Assistente Strategico  [2] Agente Autonomo")
+    aut="Agente Autonomo" if safe_int("  Scegli (1-2): ",1,2)==2 else "Assistente Strategico"
+    
+    print("\n  Rigidita: [1] Esecutivo  [2] Consultivo")
+    rig="Esecutivo" if safe_int("  Scegli (1-2): ",1,2)==1 else "Consultivo"
     return modo,aut,rig
 
 def step_stack():
     div("-"); print("  STEP 3 - TECH STACK\n")
-    ui={1:"CLI",2:"Chat Bot",3:"WebApp",4:"Solo dati"}[safe_int("  UI (1-4): ",1,4)]
-    exp="JSON+CSV" if safe_int("  Dati (1-2): ",1,2)==2 else "JSON"
-    log_on = input("  Attivare errori.log? (s/n): ").strip().lower()=="s"
+    print("  Interfaccia UI: [1] CLI  [2] Chat Bot  [3] WebApp  [4] Solo dati")
+    ui={1:"CLI",2:"Chat Bot",3:"WebApp",4:"Solo dati"}[safe_int("  Scegli (1-4): ",1,4)]
+    
+    print("\n  Gestione Dati: [1] Solo JSON  [2] JSON + CSV Export")
+    exp="JSON+CSV" if safe_int("  Scegli (1-2): ",1,2)==2 else "JSON"
+    
+    log_on = input("\n  Attivare errori.log? (s/n): ").strip().lower()=="s"
     poll   = input("  Infinity Polling? (s/n): ").strip().lower()=="s"
     sec    = input("  Separare API keys? (s/n): ").strip().lower()=="s"
     return ui,exp,log_on,poll,sec
@@ -147,14 +156,19 @@ def step_language():
     for k,v in LANGS.items(): print("    ["+k+"] "+v[0])
     s=safe_int("  Scegli (1-7): ",1,7); preset=LANGS[str(s)]
     if s==7:
-        lp,lr,lc = input("Prompt: "), input("Resp: "), input("Code: ")
-    else: lp,lr,lc=preset[1],preset[2],preset[3]
+        lp = input("  Lingua Prompt: ").strip() or "Italiano"
+        lr = input("  Lingua Risposta: ").strip() or "Italiano"
+        lc = input("  Lingua Codice: ").strip() or "Italiano"
+    else: 
+        lp,lr,lc=preset[1],preset[2],preset[3]
     return lp,lr,lc
 
 def step_ei():
     div("-"); print("  STEP 5 - ANALISI EI\n")
-    obj, vers, tool = input("  Obiettivo: "), input("  Versione: "), input("  Tool: ")
-    deps = input("  Dipendenze: ")
+    obj  = input("  Obiettivo: ").strip() or "Non specificato"
+    vers = input("  Versione: ").strip() or "v1.0"
+    tool = input("  Tool/Framework: ").strip() or "Non specificato"
+    deps = input("  Dipendenze (es. requests, telebot): ").strip() or ""
     tech = multiline("Descrizione tecnica / richiesta")
     return obj,vers,tool,deps,tech
 
@@ -174,16 +188,16 @@ def step_tools():
             is_didactic = True
             tipi_sel = ["ANALISI/DIDATTICA - Studio teorico senza codice"]; break
         elif x == "8":
-            tipi_sel.append(input("  Descrivi custom: ").strip() or "Custom")
+            tipi_sel.append(input("  Descrivi tool custom: ").strip() or "Custom")
         elif x in TOOL_TYPES: tipi_sel.append(TOOL_TYPES[x])
     if not tipi_sel: tipi_sel = ["Input/Output semplice"]
 
     if is_didactic:
         nome_tool = input("  Titolo analisi: ").strip() or "Analisi_Teorica"
         n_tools, extra = "1", ""
-        funzione = multiline("Cosa vuoi studiare?")
+        funzione = multiline("Cosa vuoi studiare/analizzare?")
     else:
-        nome_tool = input("  Nome file tool: ").strip() or "main"
+        nome_tool = input("  Nome file tool (es: main_bot): ").strip() or "main"
         n_tools = input("  Quanti tools?: ") or "1"
         funzione = multiline("Cosa fa il tool?")
         extra = ""
@@ -212,11 +226,11 @@ def build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
     
     out += f"{S}\n  ISTRUZIONI\n{S}\n"
     if is_didactic:
-        out += "[1] MODALITA: SOLO ANALISI (Schemi, tabelle, niente codice).\n"
+        out += "[1] MODALITA: SOLO ANALISI (Schemi, tabelle, spiegazioni. NIENTE CODICE ESEGUIBILE).\n"
     else:
-        out += "[1] BOOTSTRAP: Usa pip install per le dipendenze.\n"
+        out += "[1] BOOTSTRAP: Usa pip install per le dipendenze se specificate.\n"
         out += f"[2] PROTOCOLLO: Invia CODICE COMPLETO con cat-EOF su {rel}/{nome_tool}.py\n"
-    out += "[3] LOGGING: Aggiorna sempre errori.log.\n"
+    out += "[3] LOGGING: Gestisci e aggiorna sempre errori.log.\n"
     return out
 
 def main():
@@ -239,16 +253,22 @@ def main():
 
     clr(); div(); print(prompt); div()
 
-    if clip(prompt): print("  ✅ Prompt copiato negli appunti!")
+    if clip(prompt): print("\n  ✅ Prompt copiato negli appunti!")
 
     if not did:
         div("-")
-        if input(f"  Vuoi creare {nome_t}.py vuoto ora? (s/n): ").lower() == 's':
+        if input(f"  Vuoi creare in automatico {nome_t}.py vuoto ora? (s/n): ").lower() == 's':
             if write_skill_file(path, nome_t, f"#!/usr/bin/env python3\n# v{ver} - {nome_t}\n"):
-                print(f"  ✅ File creato: {rel}/{nome_t}.py")
+                print(f"  ✅ OK: File creato ed eseguibile in: {rel}/{nome_t}.py")
 
-    input("\nPremi INVIO...")
+    input("\nPremi INVIO per chiudere...")
 
 if __name__ == "__main__":
-    try: main()
-    except Exception: logging.error(traceback.format_exc())
+    try: 
+        main()
+    except KeyboardInterrupt: 
+        print("\n  [!] Interrotto dall'utente. Uscita pulita.")
+    except Exception as e:
+        logging.error("CRASH:\n"+traceback.format_exc())
+        print("\n  [X] ERRORE CRITICO - Dettagli salvati in errori.log")
+        input("Premi INVIO per chiudere...")

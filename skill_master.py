@@ -37,7 +37,7 @@ def safe_int(msg, lo, hi):
     while True:
         r = input(msg).strip()
         if r.isdigit() and lo <= int(r) <= hi: return int(r)
-        print("  Number between "+str(lo)+" and "+str(hi))
+        print("  [!] Number between "+str(lo)+" and "+str(hi))
 
 def relog(path):
     lp = os.path.join(path,"error.log")
@@ -128,16 +128,25 @@ def step_workspace():
 
 def step_cognitive():
     div("-"); print("  STEP 2 - COGNITIVE MODEL\n")
-    modo=["EI Analysis","Coder","Hybrid"][safe_int("  Mode (1-3): ",1,3)-1]
-    aut="Autonomous Agent" if safe_int("  Autonomy (1-2): ",1,2)==2 else "Strategic Assistant"
-    rig="Executive" if safe_int("  Rigidity (1-2): ",1,2)==1 else "Consultative"
+    print("  Mode: [1] EI Analysis  [2] Coder  [3] Hybrid")
+    modo=["EI Analysis","Coder","Hybrid"][safe_int("  Choose (1-3): ",1,3)-1]
+    
+    print("\n  Autonomy: [1] Strategic Assistant  [2] Autonomous Agent")
+    aut="Autonomous Agent" if safe_int("  Choose (1-2): ",1,2)==2 else "Strategic Assistant"
+    
+    print("\n  Rigidity: [1] Executive  [2] Consultative")
+    rig="Executive" if safe_int("  Choose (1-2): ",1,2)==1 else "Consultative"
     return modo,aut,rig
 
 def step_stack():
     div("-"); print("  STEP 3 - TECH STACK\n")
-    ui={1:"CLI",2:"Chat Bot",3:"WebApp",4:"Data Only"}[safe_int("  UI (1-4): ",1,4)]
-    exp="JSON+CSV" if safe_int("  Data (1-2): ",1,2)==2 else "JSON"
-    log_on = input("  Enable error.log? (y/n): ").strip().lower()=="y"
+    print("  UI Interface: [1] CLI  [2] Chat Bot  [3] WebApp  [4] Data Only")
+    ui={1:"CLI",2:"Chat Bot",3:"WebApp",4:"Data Only"}[safe_int("  Choose (1-4): ",1,4)]
+    
+    print("\n  Data Storage: [1] JSON Only  [2] JSON + CSV Export")
+    exp="JSON+CSV" if safe_int("  Choose (1-2): ",1,2)==2 else "JSON"
+    
+    log_on = input("\n  Enable error.log? (y/n): ").strip().lower()=="y"
     poll   = input("  Infinity Polling? (y/n): ").strip().lower()=="y"
     sec    = input("  Separate API keys? (y/n): ").strip().lower()=="y"
     return ui,exp,log_on,poll,sec
@@ -147,14 +156,19 @@ def step_language():
     for k,v in LANGS.items(): print("    ["+k+"] "+v[0])
     s=safe_int("  Choose (1-7): ",1,7); preset=LANGS[str(s)]
     if s==7:
-        lp,lr,lc = input("Prompt: "), input("Resp: "), input("Code: ")
-    else: lp,lr,lc=preset[1],preset[2],preset[3]
+        lp = input("  Prompt Language: ").strip() or "English"
+        lr = input("  Response Language: ").strip() or "English"
+        lc = input("  Code Language: ").strip() or "English"
+    else: 
+        lp,lr,lc=preset[1],preset[2],preset[3]
     return lp,lr,lc
 
 def step_ei():
     div("-"); print("  STEP 5 - EI ANALYSIS\n")
-    obj, vers, tool = input("  Objective: "), input("  Version: "), input("  Tool: ")
-    deps = input("  Dependencies: ")
+    obj  = input("  Objective: ").strip() or "Not specified"
+    vers = input("  Version: ").strip() or "v1.0"
+    tool = input("  Tool/Framework: ").strip() or "Not specified"
+    deps = input("  Dependencies (e.g., requests, telebot): ").strip() or ""
     tech = multiline("Technical description / request")
     return obj,vers,tool,deps,tech
 
@@ -174,16 +188,16 @@ def step_tools():
             is_didactic = True
             tipi_sel = ["ANALYSIS/DIDACTIC - Theoretical study without code"]; break
         elif x == "8":
-            tipi_sel.append(input("  Describe custom: ").strip() or "Custom")
+            tipi_sel.append(input("  Describe custom tool: ").strip() or "Custom")
         elif x in TOOL_TYPES: tipi_sel.append(TOOL_TYPES[x])
     if not tipi_sel: tipi_sel = ["Simple Input/Output"]
 
     if is_didactic:
         nome_tool = input("  Analysis title: ").strip() or "Theoretical_Analysis"
         n_tools, extra = "1", ""
-        funzione = multiline("What do you want to study?")
+        funzione = multiline("What do you want to study/analyze?")
     else:
-        nome_tool = input("  Tool file name: ").strip() or "main"
+        nome_tool = input("  Tool file name (e.g., main_bot): ").strip() or "main"
         n_tools = input("  How many tools?: ") or "1"
         funzione = multiline("What does the tool do?")
         extra = ""
@@ -212,11 +226,11 @@ def build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
     
     out += f"{S}\n  INSTRUCTIONS\n{S}\n"
     if is_didactic:
-        out += "[1] MODE: ANALYSIS ONLY (Schemas, tables, no code).\n"
+        out += "[1] MODE: ANALYSIS ONLY (Schemas, tables, explanations. NO EXECUTABLE CODE).\n"
     else:
-        out += "[1] BOOTSTRAP: Use pip install for dependencies.\n"
+        out += "[1] BOOTSTRAP: Use pip install for dependencies if specified.\n"
         out += f"[2] PROTOCOL: Send COMPLETE CODE with cat-EOF to {rel}/{nome_tool}.py\n"
-    out += "[3] LOGGING: Always update error.log.\n"
+    out += "[3] LOGGING: Always manage and update error.log.\n"
     return out
 
 def main():
@@ -239,16 +253,22 @@ def main():
 
     clr(); div(); print(prompt); div()
 
-    if clip(prompt): print("  ✅ Prompt copied to clipboard!")
+    if clip(prompt): print("\n  ✅ Prompt copied to clipboard!")
 
     if not did:
         div("-")
-        if input(f"  Do you want to create an empty {nome_t}.py now? (y/n): ").lower() == 'y':
+        if input(f"  Do you want to auto-create an empty {nome_t}.py now? (y/n): ").lower() == 'y':
             if write_skill_file(path, nome_t, f"#!/usr/bin/env python3\n# v{ver} - {nome_t}\n"):
-                print(f"  ✅ File created: {rel}/{nome_t}.py")
+                print(f"  ✅ OK: File created and executable in: {rel}/{nome_t}.py")
 
     input("\nPress ENTER to close...")
 
 if __name__ == "__main__":
-    try: main()
-    except Exception: logging.error(traceback.format_exc())
+    try: 
+        main()
+    except KeyboardInterrupt: 
+        print("\n  [!] Interrupted by user. Exiting cleanly.")
+    except Exception as e:
+        logging.error("CRASH:\n"+traceback.format_exc())
+        print("\n  [X] CRITICAL ERROR - Details saved in error.log")
+        input("Press ENTER to close...")
