@@ -39,6 +39,12 @@ def safe_int(msg, lo, hi):
         if r.isdigit() and lo <= int(r) <= hi: return int(r)
         print("  [!] Number between "+str(lo)+" and "+str(hi))
 
+def ask_step(step_func):
+    while True:
+        res = step_func()
+        cmd = input("\n  [ENTER] Confirm  [X] Repeat step: ").strip().lower()
+        if cmd != 'x': return res
+
 def relog(path):
     lp = os.path.join(path,"error.log")
     rl = logging.getLogger()
@@ -104,8 +110,8 @@ def write_skill_file(path, nome_tool, content):
 def step_workspace():
     clr(); div()
     print("  TERMUX SKILL MASTER v4.6"); div()
-    print("\n  [1] New project\n  [2] Open existing\n  [3] Root (no subfolders)")
-    s = safe_int("Choose (1-3): ",1,3)
+    print("\n  [1] New project\n  [2] Open existing\n  [3] Root (no subfolders)\n  [4] New project from Home (~)")
+    s = safe_int("Choose (1-4): ",1,4)
     path=BASE_DIR; nome="ROOT"; ver="1.0"
     rel="~/Termux_Skill_Project"; cd="cd "+rel
     if s==1:
@@ -123,6 +129,12 @@ def step_workspace():
             nome=pl[idx]; path=os.path.join(BASE_DIR,nome)
             ver=get_ver(path)
             rel="~/Termux_Skill_Project/"+nome; cd="cd "+rel
+    elif s==4:
+        nome = input("  Folder name (in Home): ").strip() or "proj_"+datetime.now().strftime("%Y%m%d_%H%M")
+        path = os.path.join(os.path.expanduser("~"),nome)
+        os.makedirs(path,exist_ok=True); save_ver(path,"1.0")
+        rel="~/"+nome
+        cd="cd ~ && mkdir -p "+nome+" && cd "+nome
     relog(path)
     return nome,path,rel,ver,cd
 
@@ -140,8 +152,16 @@ def step_cognitive():
 
 def step_stack():
     div("-"); print("  STEP 3 - TECH STACK\n")
-    print("  UI Interface: [1] CLI  [2] Chat Bot  [3] WebApp  [4] Data Only")
-    ui={1:"CLI",2:"Chat Bot",3:"WebApp",4:"Data Only"}[safe_int("  Choose (1-4): ",1,4)]
+    print("  UI Interface: [1] CLI  [2] Chat Bot  [3] WebApp  [4] Data Only  [5] Desktop GUI  [6] Custom")
+    raw_ui = input("  Choose (e.g., 1,3): ").strip()
+    mappa_ui = {1:"CLI", 2:"Chat Bot", 3:"WebApp", 4:"Data Only", 5:"Desktop GUI", 6:"Custom"}
+    ui_scelte = []
+    for x in raw_ui.split(","):
+        x = x.strip()
+        if x.isdigit() and 1 <= int(x) <= 6:
+            ui_scelte.append(mappa_ui[int(x)])
+    if not ui_scelte: ui_scelte = ["CLI"]
+    ui = " + ".join(ui_scelte)
     
     print("\n  Data Storage: [1] JSON Only  [2] JSON + CSV Export")
     exp="JSON+CSV" if safe_int("  Choose (1-2): ",1,2)==2 else "JSON"
@@ -228,20 +248,23 @@ def build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
     if is_didactic:
         out += "[1] MODE: ANALYSIS ONLY (Schemas, tables, explanations. NO EXECUTABLE CODE).\n"
     else:
-        out += "[1] BOOTSTRAP: Use pip install for dependencies if specified.\n"
+        out += "[1] SAFE BOOTSTRAP: Check for dependencies first. Use scripts or `pip install` ONLY if the modules are missing on the system.\n"
         out += f"[2] PROTOCOL: Send COMPLETE CODE with cat-EOF to {rel}/{nome_tool}.py\n"
     out += "[3] LOGGING: Always manage and update error.log.\n"
+    out += "[4] API POLICY: If external APIs are needed, exclusively use free and available APIs without blocking authentication. If unavailable, program the function from scratch locally.\n"
+    out += "[5] ANTI-HALLUCINATION & CLARIFICATION: If the strategy mentions pre-existing components not provided, presents ambiguities, or has logical gaps, DO NOT invent fake code. Stop and ask clarifying questions to the user.\n"
     return out
 
 def main():
-    clr()
-    nome,path,rel,ver,cd = step_workspace()
-    modo,aut,rig = step_cognitive()
-    ui,exp,log_on,poll,sec = step_stack()
-    lp,lr,lc = step_language()
-    obj,vers,tool,deps,tech = step_ei()
-    desc = step_desc()
-    tipi_t,nome_t,fun_t,n_t,ex_t,did = step_tools()
+    while True:
+        clr()
+        nome,path,rel,ver,cd = ask_step(step_workspace)
+        modo,aut,rig = ask_step(step_cognitive)
+        ui,exp,log_on,poll,sec = ask_step(step_stack)
+        lp,lr,lc = ask_step(step_language)
+        obj,vers,tool,deps,tech = ask_step(step_ei)
+        desc = ask_step(step_desc)
+        tipi_t,nome_t,fun_t,n_t,ex_t,did = ask_step(step_tools)
 
     prompt = build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
                           lp,lr,lc,obj,vers,tool,deps,tech,desc,
