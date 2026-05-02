@@ -1,36 +1,37 @@
-<p align="center">
-  <img src="logo.jpg" alt="Termux Skill Master Logo" width="200"/>
-</p>
+# 📦 Termux Skill Master 
 
-# 📱 Termux Skill Master v4.6
+**Advanced Prompt Engineering & Architecture Generator for LLMs / SLMs**
 
-## 📝 Description
-**Termux Skill Master** is an advanced script for creating "Skills" and AI configurations, specifically designed for use via **Termux-Widget**. It transforms your smartphone into a high-performance coding and automation station, allowing you to launch complex workflows directly from your phone's home screen without manual terminal interaction.
+Termux Skill Master is a professional, terminal-based tool designed to run on Termux (Android) or any Unix/Windows environment. It acts as an interactive mentor and generator, helping developers and beginners structure complex software architectures before feeding them to AI models.
 
-Developed entirely with AI support, this tool offers a seamless and automated experience for generating bots, scripts, and structured interaction logic with your favorite AI Chatbots.
+## 🚀 Key Features
 
-## 🛠️ Key Features
-*   **Widget Integration:** Launch the Skill Generator instantly with a single tap directly from your Home screen.
-*   **Clipboard Automation (Termux:API Magic):** Every generated prompt or Skill is automatically and instantly saved to your smartphone's clipboard. Just open your AI Chatbot and hit "Paste" to start working immediately.
-*   **cat-EOF Protocol:** Bypass the limitations of mobile text editors (like nano) for lightning-fast, error-free code writing.
-*   **Architectural Security:** External configuration for Tokens and API Keys in isolated files (`config.json` / `.env`) to protect sensitive data during sharing.
-*   **Advanced Data Management:** Native support for JSON databases, error logging (`errori.log`), and Infinity Polling system integration.
-*   **AI-Driven Workflow:** Optimized to generate high-precision "skill matrices" that make AI interaction incredibly accurate and structured.
+- **🛡️ Anti-Hallucination Guardrails:** Automatically injects strict policies in the generated prompt to prevent the AI from inventing non-existent components, libraries, or APIs. The AI is forced to ask clarifying questions if your strategy is ambiguous.
+- **🧩 Multi-Choice Architecture:** Build complex systems. Choose multiple UI stacks (e.g., CLI + WebApp + GUI Desktop) and define exact file names for modular orchestration (preventing spaghetti-code).
+- **🔒 Safe Bootstrap & API Policy:** Instructs the AI to verify the system before blindly running `pip install` and enforces the use of free, accessible APIs.
+- **🔄 Interactive Correction Loop:** Made a typo? The built-in Ask-Step loop allows you to press `X` to repeat any single step on the fly without restarting the entire configuration.
+- **🌍 Dual Language Support:** Comes with both English (`skill_master.py`) and Italian (`skill_master_it.py`) interfaces out of the box.
 
-## 📦 Requirements
-To ensure full functionality, you must install the following on your Android device (preferably via **F-Droid**):
-1.  **Termux:** The Linux terminal emulator to host the Python environment.
-2.  **Termux:API:** The essential extension for system interaction (e.g., auto-copy to clipboard).
-3.  **Termux:Widget:** The extension for quick home-screen script activation via visual shortcuts.
+## 🛠️ How to Use
 
-## 🎮 How to Use
-1.  Go to your Android **Home Screen**.
-2.  Add the **Termux Widget** to your screen.
-3.  Tap the **SkillMaster** button.
-4.  Follow the guided prompts to define your project (Python Tools, APIs, Theoretical Study, etc.).
-5.  The script will automatically copy the **"Master Prompt"** to your clipboard and ask if you want to create the empty `.py` file in the project folder.
-6.  **Paste the prompt** into your favorite AI Chatbot.
-7.  When the AI responds with code encapsulated in **cat-EOF format**, copy the entire block and paste it into your Termux terminal to see your project come to life instantly!
+1. Clone the repository to your Termux or PC:
+   ```bash
+   git clone https://github.com/dcarrieri73-hub/termux-skill-master.git
+   cd termux-skill-master
+   ```
+
+2. Run your preferred language version:
+   ```bash
+   python skill_master.py
+   # OR for Italian
+   python skill_master_it.py
+   ```
+
+3. Follow the interactive CLI to define your workspace, cognitive model, tech stack, and modular files.
+4. The tool will generate a perfectly structured prompt (`latest_prompt.txt`) and automatically copy it to your clipboard. Paste it to your AI (ChatGPT, Claude, or a local SLM) and watch the magic happen!
+
+## 💡 Why use this?
+Instead of writing vague requests like "build me a bot", Skill Master forces you to think like a Software Architect. It outputs a standardized, imperative prompt that dictates strict rules to the AI, ensuring the generated code is modular, robust, and explicitly adheres to your exact specifications. Every error made during prompt creation becomes a lesson, as the AI will mentor you rather than generating broken code.
 
 ---
-*Note: This repository also includes an Italian version (`skill_master_it.py`) for the local community.*
+*Created by Davide - Engineering prompts for the future.*
