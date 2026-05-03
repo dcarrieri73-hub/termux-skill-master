@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# TERMUX SKILL MASTER v4.6 - Auto-Write & Didactic Edition (English)
+# TERMUX SKILL MASTER v4.7 - Webhook & Mini-App Edition (English)
 import os, subprocess, logging, traceback, json
 from datetime import datetime
 
 BASE_DIR = os.path.expanduser("~/Termux_Skill_Project")
 os.makedirs(BASE_DIR, exist_ok=True)
-logging.basicConfig(filename=os.path.join(BASE_DIR,"error.log"),
+logging.basicConfig(filename=os.path.join(BASE_DIR,"errori.log"),
     level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 
 LANGS = {
@@ -20,12 +20,12 @@ LANGS = {
 
 TOOL_TYPES = {
     "1":"Simple Input/Output",
-    "2":"Persistent JSON Memory",
-    "3":"LLM Weights and Training",
+    "2":"Persistent JSON memory",
+    "3":"Weights and LLM training",
     "4":"External HTTP/REST API",
     "5":"Infinity Polling loop",
     "6":"Interactive CLI with menu",
-    "7":"Multi-file with modules",
+    "7":"Multifile with modules",
     "8":"Custom",
     "9":"[ANALYSIS/DIDACTIC] Theoretical study only - no code",
 }
@@ -37,16 +37,16 @@ def safe_int(msg, lo, hi):
     while True:
         r = input(msg).strip()
         if r.isdigit() and lo <= int(r) <= hi: return int(r)
-        print("  [!] Number between "+str(lo)+" and "+str(hi))
+        print("  [!] Enter a number between "+str(lo)+" and "+str(hi))
 
 def ask_step(step_func):
     while True:
         res = step_func()
-        cmd = input("\n  [ENTER] Confirm  [X] Repeat step: ").strip().lower()
+        cmd = input("\n  [ENTER] Confirm  [X] Repeat this step: ").strip().lower()
         if cmd != 'x': return res
 
 def relog(path):
-    lp = os.path.join(path,"error.log")
+    lp = os.path.join(path,"errori.log")
     rl = logging.getLogger()
     for h in rl.handlers[:]: rl.removeHandler(h)
     rl.addHandler(logging.FileHandler(lp))
@@ -87,7 +87,7 @@ def save_history(path,prompt,ver):
     except Exception as e: logging.error("history:"+str(e))
 
 def multiline(label):
-    print("  "+label+" (Press ENTER twice to finish):")
+    print("  "+label+" (ENTER twice to finish):")
     lines = []
     while True:
         l = input("  > ")
@@ -95,8 +95,8 @@ def multiline(label):
         lines.append(l)
     return "\n".join(lines) if lines else "Not specified."
 
-def write_skill_file(path, nome_tool, content):
-    filename = f"{nome_tool}.py"
+def write_skill_file(path, tool_name, content):
+    filename = f"{tool_name}.py"
     full_path = os.path.join(path, filename)
     try:
         with open(full_path, "w") as f:
@@ -104,21 +104,21 @@ def write_skill_file(path, nome_tool, content):
         os.chmod(full_path, 0o755)
         return True
     except Exception as e:
-        logging.error("File writing: "+str(e))
+        logging.error("File write: "+str(e))
         return False
 
 def step_workspace():
     clr(); div()
-    print("  TERMUX SKILL MASTER v4.6"); div()
+    print("  TERMUX SKILL MASTER v4.7"); div()
     print("\n  [1] New project\n  [2] Open existing\n  [3] Root (no subfolders)\n  [4] New project from Home (~)")
     s = safe_int("Choose (1-4): ",1,4)
-    path=BASE_DIR; nome="ROOT"; ver="1.0"
+    path=BASE_DIR; name="ROOT"; ver="1.0"
     rel="~/Termux_Skill_Project"; cd="cd "+rel
     if s==1:
-        nome = input("  Folder name: ").strip() or "proj_"+datetime.now().strftime("%Y%m%d_%H%M")
-        path = os.path.join(BASE_DIR,nome)
+        name = input("  Folder name: ").strip() or "proj_"+datetime.now().strftime("%Y%m%d_%H%M")
+        path = os.path.join(BASE_DIR,name)
         os.makedirs(path,exist_ok=True); save_ver(path,"1.0")
-        rel="~/Termux_Skill_Project/"+nome
+        rel="~/Termux_Skill_Project/"+name
         cd="mkdir -p "+rel+" && cd "+rel
     elif s==2:
         pl = [d for d in os.listdir(BASE_DIR) if os.path.isdir(os.path.join(BASE_DIR,d))]
@@ -126,35 +126,35 @@ def step_workspace():
         else:
             for i,p in enumerate(pl,1): print("    ["+str(i)+"] "+p)
             idx = safe_int("  Select: ",1,len(pl))-1
-            nome=pl[idx]; path=os.path.join(BASE_DIR,nome)
+            name=pl[idx]; path=os.path.join(BASE_DIR,name)
             ver=get_ver(path)
-            rel="~/Termux_Skill_Project/"+nome; cd="cd "+rel
+            rel="~/Termux_Skill_Project/"+name; cd="cd "+rel
     elif s==4:
-        nome = input("  Folder name (in Home): ").strip() or "proj_"+datetime.now().strftime("%Y%m%d_%H%M")
-        path = os.path.join(os.path.expanduser("~"),nome)
+        name = input("  Folder name (in Home): ").strip() or "proj_"+datetime.now().strftime("%Y%m%d_%H%M")
+        path = os.path.join(os.path.expanduser("~"),name)
         os.makedirs(path,exist_ok=True); save_ver(path,"1.0")
-        rel="~/"+nome
-        cd="cd ~ && mkdir -p "+nome+" && cd "+nome
+        rel="~/"+name
+        cd="cd ~ && mkdir -p "+name+" && cd "+name
     relog(path)
-    return nome,path,rel,ver,cd
+    return name,path,rel,ver,cd
 
 def step_cognitive():
     div("-"); print("  STEP 2 - COGNITIVE MODEL\n")
     print("  Mode: [1] EI Analysis  [2] Coder  [3] Hybrid")
-    modo=["EI Analysis","Coder","Hybrid"][safe_int("  Choose (1-3): ",1,3)-1]
+    mode=["EI Analysis","Coder","Hybrid"][safe_int("  Choose (1-3): ",1,3)-1]
     
     print("\n  Autonomy: [1] Strategic Assistant  [2] Autonomous Agent")
     aut="Autonomous Agent" if safe_int("  Choose (1-2): ",1,2)==2 else "Strategic Assistant"
     
     print("\n  Rigidity: [1] Executive  [2] Consultative")
     rig="Executive" if safe_int("  Choose (1-2): ",1,2)==1 else "Consultative"
-    return modo,aut,rig
+    return mode,aut,rig
 
 def step_stack():
     div("-"); print("  STEP 3 - TECH STACK\n")
-    print("  UI Interface: [1] CLI  [2] Chat Bot  [3] WebApp  [4] Data Only  [5] Desktop GUI  [6] Custom")
-    raw_ui = input("  Choose (e.g., 1,3): ").strip()
-    mappa_ui = {1:"CLI", 2:"Chat Bot", 3:"WebApp", 4:"Data Only", 5:"Desktop GUI", 6:"Custom"}
+    print("  UI Interface: [1] CLI  [2] Chat Bot  [3] WebApp  [4] Telegram Mini-App  [5] Desktop GUI  [6] Other")
+    raw_ui = input("  Choose from menu (e.g., 1,4): ").strip()
+    mappa_ui = {1:"CLI", 2:"Chat Bot", 3:"WebApp", 4:"Telegram Mini-App", 5:"Desktop GUI", 6:"Other"}
     ui_scelte = []
     for x in raw_ui.split(","):
         x = x.strip()
@@ -163,13 +163,21 @@ def step_stack():
     if not ui_scelte: ui_scelte = ["CLI"]
     ui = " + ".join(ui_scelte)
     
-    print("\n  Data Storage: [1] JSON Only  [2] JSON + CSV Export")
+    print("\n  Data Management: [1] JSON Only  [2] JSON + CSV Export")
     exp="JSON+CSV" if safe_int("  Choose (1-2): ",1,2)==2 else "JSON"
     
-    log_on = input("\n  Enable error.log? (y/n): ").strip().lower()=="y"
-    poll   = input("  Infinity Polling? (y/n): ").strip().lower()=="y"
-    sec    = input("  Separate API keys? (y/n): ").strip().lower()=="y"
-    return ui,exp,log_on,poll,sec
+    log_on = input("\n  Enable errors.log? (y/n): ").strip().lower()=="y"
+    
+    print("\n  Bot Architecture: [1] Infinity Polling (Local)  [2] Webhook")
+    if safe_int("  Choose (1-2): ", 1, 2) == 2:
+        print("\n  Webhook Environment: [1] Cloud Server (e.g., Render)  [2] Local Termux (e.g., Ngrok/Tunnel)")
+        amb = "Cloud Server" if safe_int("  Choose (1-2): ", 1, 2) == 1 else "Local Termux"
+        arch = f"Webhook ({amb})"
+    else:
+        arch = "Infinity Polling"
+        
+    sec = input("\n  Separate API keys? (y/n): ").strip().lower()=="y"
+    return ui,exp,log_on,arch,sec
 
 def step_language():
     div("-"); print("  STEP 4 - LANGUAGE\n")
@@ -188,16 +196,16 @@ def step_ei():
     obj  = input("  Objective: ").strip() or "Not specified"
     vers = input("  Version: ").strip() or "v1.0"
     tool = input("  Tool/Framework: ").strip() or "Not specified"
-    deps = input("  Dependencies (e.g., requests, telebot): ").strip() or ""
+    deps = input("  Dependencies (e.g., requests, telebot, fastapi): ").strip() or ""
     tech = multiline("Technical description / request")
     return obj,vers,tool,deps,tech
 
 def step_desc():
     div("-"); print("  STEP 6 - STRATEGIC DESCRIPTION\n")
-    return multiline("Project goal")
+    return multiline("Project objective")
 
 def step_tools():
-    div("-"); print("  STEP 7 - TOOLS DEFINITION\n")
+    div("-"); print("  STEP 7 - TOOL DEFINITION\n")
     for k,v in TOOL_TYPES.items(): print("    ["+k+"] "+v)
     raw = input("\n  Choose (e.g., 1,4 | 9 for Analysis only): ").strip()
 
@@ -213,22 +221,22 @@ def step_tools():
     if not tipi_sel: tipi_sel = ["Simple Input/Output"]
 
     if is_didactic:
-        nome_tool = input("  Analysis title: ").strip() or "Theoretical_Analysis"
+        tool_name = input("  Analysis title: ").strip() or "Theoretical_Analysis"
         n_tools, extra = "1", ""
-        funzione = multiline("What do you want to study/analyze?")
+        function = multiline("What do you want to study/analyze?")
     else:
-        nome_tool = input("  Tool file name (e.g., main_bot): ").strip() or "main"
+        tool_name = input("  Tool file name (e.g., main_bot): ").strip() or "main"
         n_tools = input("  How many tools?: ") or "1"
-        funzione = multiline("What does the tool do?")
+        function = multiline("What does the tool do?")
         extra = ""
-        if any("Weights" in t for t in tipi_sel): extra += "  Weights: "+(input("  Weights structure: ") or "JSON")+"\n"
+        if any("Weights" in t for t in tipi_sel): extra += "  Weights: "+(input("  Weight structure: ") or "JSON")+"\n"
         if any("API" in t for t in tipi_sel): extra += "  API: "+(input("  API Endpoint: ") or "N/A")+"\n"
 
-    return tipi_sel, nome_tool, funzione, n_tools, extra, is_didactic
+    return tipi_sel, tool_name, function, n_tools, extra, is_didactic
 
-def build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
+def build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,arch,sec,
                  lp,lr,lc,obj,vers,tool,deps,tech,desc,
-                 tipi_tool,nome_tool,funzione_tool,n_tools,extra_tool,is_didactic):
+                 tipi_tool,tool_name,function_tool,n_tools,extra_tool,is_didactic):
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     S = "="*46
     out = f"{S}\n HYBRID SKILL v{ver} - {nome}\n Path: {rel}\n {cd}\n"
@@ -236,37 +244,36 @@ def build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
     out += f"{S}\n\nOBJECTIVE: {obj}\nVERSION: {vers}\nTOOL: {tool}\n"
     if not is_didactic and deps: out += f"DEPENDENCIES: {deps}\n"
     
-    out += f"\nTECHNICAL:\n{tech}\n\nSTRATEGY:\n{desc}\n\n"
-    out += f"CONFIGURATION:\nMode={modo} | Autonomy={aut} | Languages={lr}\n"
-    out += f"STACK: UI={ui} | Log={log_on} | Polling={poll}\n\n"
+    out += f"\nTECHNIQUE:\n{tech}\n\nSTRATEGY:\n{desc}\n\n"
+    out += f"CONFIGURATION:\nMode={modo} | Autonomy={aut} | Language={lr}\n"
+    out += f"STACK: UI={ui} | Log={log_on} | Bot Architecture={arch} | Separate Keys={sec}\n\n"
     
-    out += f"TOOLS ({nome_tool}):\n"
+    out += f"TOOLS ({tool_name}):\n"
     for t in tipi_tool: out += f" - {t}\n"
-    out += f"\nFUNCTION:\n{funzione_tool}\n\n"
+    out += f"\nFUNCTION:\n{function_tool}\n\n"
     
     out += f"{S}\n  INSTRUCTIONS\n{S}\n"
     if is_didactic:
         out += "[1] MODE: ANALYSIS ONLY (Schemas, tables, explanations. NO EXECUTABLE CODE).\n"
     else:
         out += "[1] SAFE BOOTSTRAP: Check for dependencies first. Use scripts or `pip install` ONLY if the modules are missing on the system.\n"
-        out += f"[2] PROTOCOL: Send COMPLETE CODE with cat-EOF to {rel}/{nome_tool}.py\n"
+        out += f"[2] PROTOCOL: Send COMPLETE CODE with cat-EOF to {rel}/{tool_name}.py\n"
     out += "[3] LOGGING: Always manage and update error.log.\n"
-    out += "[4] API POLICY: If external APIs are needed, exclusively use free and available APIs without blocking authentication. If unavailable, program the function from scratch locally.\n"
+    out += "[4] API POLICY: If external APIs are needed, exclusively use free and available APIs without blocking authentication. If unavailable, program the logic from scratch locally.\n"
     out += "[5] ANTI-HALLUCINATION & CLARIFICATION: If the strategy mentions pre-existing components not provided, presents ambiguities, or has logical gaps, DO NOT invent fake code. Stop and ask clarifying questions to the user.\n"
     return out
 
 def main():
-    while True:
-        clr()
-        nome,path,rel,ver,cd = ask_step(step_workspace)
-        modo,aut,rig = ask_step(step_cognitive)
-        ui,exp,log_on,poll,sec = ask_step(step_stack)
-        lp,lr,lc = ask_step(step_language)
-        obj,vers,tool,deps,tech = ask_step(step_ei)
-        desc = ask_step(step_desc)
-        tipi_t,nome_t,fun_t,n_t,ex_t,did = ask_step(step_tools)
+    clr()
+    nome,path,rel,ver,cd = ask_step(step_workspace)
+    modo,aut,rig = ask_step(step_cognitive)
+    ui,exp,log_on,arch,sec = ask_step(step_stack)
+    lp,lr,lc = ask_step(step_language)
+    obj,vers,tool,deps,tech = ask_step(step_ei)
+    desc = ask_step(step_desc)
+    tipi_t,nome_t,fun_t,n_t,ex_t,did = ask_step(step_tools)
 
-    prompt = build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
+    prompt = build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,arch,sec,
                           lp,lr,lc,obj,vers,tool,deps,tech,desc,
                           tipi_t,nome_t,fun_t,n_t,ex_t,did)
 
@@ -280,9 +287,9 @@ def main():
 
     if not did:
         div("-")
-        if input(f"  Do you want to auto-create an empty {nome_t}.py now? (y/n): ").lower() == 'y':
+        if input(f"  Do you want to automatically create empty {nome_t}.py now? (y/n): ").lower() == 'y':
             if write_skill_file(path, nome_t, f"#!/usr/bin/env python3\n# v{ver} - {nome_t}\n"):
-                print(f"  ✅ OK: File created and executable in: {rel}/{nome_t}.py")
+                print(f"  ✅ OK: File created and executable at: {rel}/{nome_t}.py")
 
     input("\nPress ENTER to close...")
 
@@ -290,7 +297,7 @@ if __name__ == "__main__":
     try: 
         main()
     except KeyboardInterrupt: 
-        print("\n  [!] Interrupted by user. Exiting cleanly.")
+        print("\n  [!] Interrupted by user. Clean exit.")
     except Exception as e:
         logging.error("CRASH:\n"+traceback.format_exc())
         print("\n  [X] CRITICAL ERROR - Details saved in error.log")

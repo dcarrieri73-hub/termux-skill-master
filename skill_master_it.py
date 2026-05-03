@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# TERMUX SKILL MASTER v4.6 - Auto-Write & Didactic Edition (Italiano)
+# TERMUX SKILL MASTER v4.7 - Webhook & Mini-App Edition (Italiano)
 import os, subprocess, logging, traceback, json
 from datetime import datetime
 
@@ -109,7 +109,7 @@ def write_skill_file(path, nome_tool, content):
 
 def step_workspace():
     clr(); div()
-    print("  TERMUX SKILL MASTER v4.6"); div()
+    print("  TERMUX SKILL MASTER v4.7"); div()
     print("\n  [1] Nuovo progetto\n  [2] Apri esistente\n  [3] Root (senza sottocartelle)\n  [4] Nuovo progetto dalla Home (~)")
     s = safe_int("Scegli (1-4): ",1,4)
     path=BASE_DIR; nome="ROOT"; ver="1.0"
@@ -152,9 +152,9 @@ def step_cognitive():
 
 def step_stack():
     div("-"); print("  STEP 3 - TECH STACK\n")
-    print("  Interfaccia UI: [1] CLI  [2] Chat Bot  [3] WebApp  [4] Solo dati  [5] GUI Desktop  [6] Altro")
-    raw_ui = input("  Scegli da menu (es: 1,3): ").strip()
-    mappa_ui = {1:"CLI", 2:"Chat Bot", 3:"WebApp", 4:"Solo dati", 5:"GUI Desktop", 6:"Altro"}
+    print("  Interfaccia UI: [1] CLI  [2] Chat Bot  [3] WebApp  [4] Telegram Mini-App  [5] GUI Desktop  [6] Altro")
+    raw_ui = input("  Scegli da menu (es: 1,4): ").strip()
+    mappa_ui = {1:"CLI", 2:"Chat Bot", 3:"WebApp", 4:"Telegram Mini-App", 5:"GUI Desktop", 6:"Altro"}
     ui_scelte = []
     for x in raw_ui.split(","):
         x = x.strip()
@@ -167,9 +167,17 @@ def step_stack():
     exp="JSON+CSV" if safe_int("  Scegli (1-2): ",1,2)==2 else "JSON"
     
     log_on = input("\n  Attivare errori.log? (s/n): ").strip().lower()=="s"
-    poll   = input("  Infinity Polling? (s/n): ").strip().lower()=="s"
-    sec    = input("  Separare API keys? (s/n): ").strip().lower()=="s"
-    return ui,exp,log_on,poll,sec
+    
+    print("\n  Architettura Bot: [1] Infinity Polling (Locale)  [2] Webhook")
+    if safe_int("  Scegli (1-2): ", 1, 2) == 2:
+        print("\n  Ambiente Webhook: [1] Cloud Server (es. Render)  [2] Termux Locale (es. Ngrok/Tunnel)")
+        amb = "Cloud Server" if safe_int("  Scegli (1-2): ", 1, 2) == 1 else "Termux Locale"
+        arch = f"Webhook ({amb})"
+    else:
+        arch = "Infinity Polling"
+        
+    sec = input("\n  Separare API keys? (s/n): ").strip().lower()=="s"
+    return ui,exp,log_on,arch,sec
 
 def step_language():
     div("-"); print("  STEP 4 - LINGUA\n")
@@ -188,7 +196,7 @@ def step_ei():
     obj  = input("  Obiettivo: ").strip() or "Non specificato"
     vers = input("  Versione: ").strip() or "v1.0"
     tool = input("  Tool/Framework: ").strip() or "Non specificato"
-    deps = input("  Dipendenze (es. requests, telebot): ").strip() or ""
+    deps = input("  Dipendenze (es. requests, telebot, fastapi): ").strip() or ""
     tech = multiline("Descrizione tecnica / richiesta")
     return obj,vers,tool,deps,tech
 
@@ -226,7 +234,7 @@ def step_tools():
 
     return tipi_sel, nome_tool, funzione, n_tools, extra, is_didactic
 
-def build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
+def build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,arch,sec,
                  lp,lr,lc,obj,vers,tool,deps,tech,desc,
                  tipi_tool,nome_tool,funzione_tool,n_tools,extra_tool,is_didactic):
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -238,7 +246,7 @@ def build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
     
     out += f"\nTECNICA:\n{tech}\n\nSTRATEGIA:\n{desc}\n\n"
     out += f"CONFIGURAZIONE:\nModo={modo} | Autonomia={aut} | Lingue={lr}\n"
-    out += f"STACK: UI={ui} | Log={log_on} | Polling={poll}\n\n"
+    out += f"STACK: UI={ui} | Log={log_on} | Architettura Bot={arch} | Separa Chiavi={sec}\n\n"
     
     out += f"TOOLS ({nome_tool}):\n"
     for t in tipi_tool: out += f" - {t}\n"
@@ -256,17 +264,16 @@ def build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
     return out
 
 def main():
-    while True:
-        clr()
-        nome,path,rel,ver,cd = ask_step(step_workspace)
-        modo,aut,rig = ask_step(step_cognitive)
-        ui,exp,log_on,poll,sec = ask_step(step_stack)
-        lp,lr,lc = ask_step(step_language)
-        obj,vers,tool,deps,tech = ask_step(step_ei)
-        desc = ask_step(step_desc)
-        tipi_t,nome_t,fun_t,n_t,ex_t,did = ask_step(step_tools)
+    clr()
+    nome,path,rel,ver,cd = ask_step(step_workspace)
+    modo,aut,rig = ask_step(step_cognitive)
+    ui,exp,log_on,arch,sec = ask_step(step_stack)
+    lp,lr,lc = ask_step(step_language)
+    obj,vers,tool,deps,tech = ask_step(step_ei)
+    desc = ask_step(step_desc)
+    tipi_t,nome_t,fun_t,n_t,ex_t,did = ask_step(step_tools)
 
-    prompt = build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,poll,sec,
+    prompt = build_prompt(nome,path,rel,ver,cd,modo,aut,rig,ui,exp,log_on,arch,sec,
                           lp,lr,lc,obj,vers,tool,deps,tech,desc,
                           tipi_t,nome_t,fun_t,n_t,ex_t,did)
 
